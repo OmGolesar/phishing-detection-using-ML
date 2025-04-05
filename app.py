@@ -5,6 +5,7 @@ import re
 from urllib.parse import urlparse
 import pickle
 import os
+import plotly.graph_objects as go
 from model.feature_extraction import extract_features_from_url
 from model.phishing_classifier import PhishingURLClassifier
 from utils import load_data, get_explanation_for_features
@@ -93,6 +94,74 @@ if st.button("Analyze URL"):
                         # Display features
                         st.dataframe(feature_df)
                         
+                        # Add interactive visualization of features
+                        st.markdown("### 📊 Feature Visualization")
+                        
+                        # Convert features to DataFrame for visualization
+                        features_for_viz = pd.DataFrame({
+                            "Feature": list(features.keys()),
+                            "Value": list(features.values()),
+                            "Impact": [0.25, 0.18, 0.12, 0.15, 0.14, 0.06, 0.10]  # Example feature importance
+                        })
+                        
+                        # Filter only binary features for the radar chart
+                        binary_features = features_for_viz[features_for_viz["Feature"].isin(
+                            ["has_ip", "has_at_symbol", "has_multiple_subdomains", 
+                             "has_suspicious_chars", "has_https", "domain_age_less_than_6months"]
+                        )]
+                        
+                        # Create radar chart columns
+                        radar_col1, radar_col2 = st.columns([2, 1])
+                        
+                        with radar_col1:
+                            # Prepare radar chart data
+                            categories = binary_features["Feature"].tolist()
+                            values = binary_features["Value"].tolist()
+                            
+                            # Add the first point also at the end to close the polygon
+                            categories.append(categories[0])
+                            values.append(values[0])
+                            
+                            fig = go.Figure()
+                            
+                            fig.add_trace(go.Scatterpolar(
+                                r=values,
+                                theta=categories,
+                                fill='toself',
+                                name='URL Features',
+                                line_color='red' if prediction == 1 else 'green',
+                                fillcolor='rgba(255, 0, 0, 0.2)' if prediction == 1 else 'rgba(0, 255, 0, 0.2)'
+                            ))
+                            
+                            fig.update_layout(
+                                polar=dict(
+                                    radialaxis=dict(
+                                        visible=True,
+                                        range=[0, 1]
+                                    )
+                                ),
+                                title="URL Feature Radar Chart",
+                                showlegend=False
+                            )
+                            
+                            st.plotly_chart(fig, use_container_width=True)
+                        
+                        with radar_col2:
+                            # Add impact color explanation
+                            st.markdown("#### What This Means")
+                            st.markdown("""
+                            The radar chart shows the presence (1) or absence (0) of key features in the URL:
+                            
+                            - **IP Address**: URLs with IP addresses instead of domain names
+                            - **@ Symbol**: Can be used to hide the actual destination
+                            - **Multiple Subdomains**: Many subdomains can be suspicious
+                            - **Suspicious Characters**: Special characters used to deceive
+                            - **HTTPS**: Secure protocol (often present in legitimate sites)
+                            - **New Domain**: Domains registered recently
+                            
+                            A larger "footprint" in the radar chart typically indicates more phishing characteristics.
+                            """)
+                        
                         # Security recommendations
                         st.markdown("### 🛡️ Security Recommendation")
                         if prediction == 1:
@@ -136,3 +205,7 @@ st.markdown("""
 - Google Safe Browsing: [https://safebrowsing.google.com/](https://safebrowsing.google.com/)
 - FBI Internet Crime Complaint Center (IC3): [https://www.ic3.gov/](https://www.ic3.gov/)
 """)
+
+# Add creator footer
+st.markdown("---")
+st.markdown("*Created by OmGolesar*", help="Phishing URL Detection Project")

@@ -204,3 +204,7 @@ try:
 except Exception as e:
     st.error(f"An error occurred while generating visualizations: {str(e)}")
     st.markdown("Please try refreshing the page or contact support if the issue persists.")
+    
+# Add creator footer
+st.markdown("---")
+st.markdown("*Created by OmGolesar*", help="Phishing URL Detection Project")

@@ -176,3 +176,7 @@ st.info("""
 sensitive information through email, text messages, or over the phone. When in doubt, contact the organization directly using 
 official contact information—not the contact details provided in a suspicious message.
 """)
+
+# Add creator footer
+st.markdown("---")
+st.markdown("*Created by OmGolesar*", help="Phishing URL Detection Project")

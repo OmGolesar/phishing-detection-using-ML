@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from utils import load_data
 
-# Page configuration
+# Page configurations
 st.set_page_config(
     page_title="Visual Insights - Phishing URL Detector",
     page_icon="📊",
